@@ -1,6 +1,7 @@
 // @flow
 
 import { actionTypes } from 'react-redux-firebase';
+import analytics from '@segment/analytics-react-native'
 import type { ResultMapType, ResultType, State } from '../flow-types';
 import GLOBAL from '../Globals';
 
@@ -20,6 +21,7 @@ export const COMMIT_TASK_SUCCESS = 'COMMIT_TASK_SUCCESS';
 
 type CompleteWelcome = { type: typeof WELCOME_COMPLETED };
 export function completeWelcome(): CompleteWelcome {
+    analytics.track('Mapswipe Mobile - Completed Welcome');
     return { type: WELCOME_COMPLETED };
 }
 
@@ -31,6 +33,9 @@ export function authStatusAvailable(user: {}): AuthStatusAvailable {
 type ToggleMapTile = { type: typeof TOGGLE_MAP_TILE, resultObject: ResultType };
 export function toggleMapTile(resultObject: ResultType): ToggleMapTile {
     // dispatched every time a map tile is tapped to change its state
+
+    // since toggleMapTile gets called when tiles are loaded,
+    // call the analytics function in the UI when the tile is tapped
     return { type: TOGGLE_MAP_TILE, resultObject };
 }
 
@@ -38,6 +43,9 @@ type CancelGroup = { type: typeof CANCEL_GROUP, projectId: string, groupId: stri
 export function cancelGroup(grp: { projectId: string, groupId: string }): CancelGroup {
     // dispatched when the user cancels work on a group midway
     // this forces deletion of the results created so far
+    analytics.track('Mapswipe Mobile - Cancelled Group', {
+      ...grp
+    });
     return { type: CANCEL_GROUP, projectId: grp.projectId, groupId: grp.groupId };
 }
 type StartGroup = {
@@ -50,6 +58,9 @@ export function startGroup(grp: { projectId: string, groupId: string, timestamp:
 StartGroup {
     // dispatched when the user cancels work on a group midway
     // this forces deletion of the results created so far
+    analytics.track('Mapswipe Mobile - Started Group', {
+      ...grp
+    });
     return {
         type: START_GROUP,
         projectId: grp.projectId,
@@ -60,6 +71,10 @@ StartGroup {
 
 type CommitGroupSuccess = { type: typeof COMMIT_GROUP_SUCCESS, projectId: string, groupId: string };
 export function commitGroupSuccess(projectId: string, groupId: string): CommitGroupSuccess {
+    analytics.track('Mapswipe Mobile - Completed Group', {
+      projectId,
+      groupId,
+    });
     return { type: COMMIT_GROUP_SUCCESS, projectId, groupId };
 }
 
@@ -74,6 +89,11 @@ export function commitGroupFailed(
     groupId: string,
     error: {},
 ): CommitGroupFailed {
+    analytics.track('Mapswipe Mobile - Failed Group ', {
+      projectId,
+      groupId,
+      error,
+    });
     return {
         type: COMMIT_GROUP_FAILED,
         projectId,
@@ -84,21 +104,34 @@ export function commitGroupFailed(
 
 type CommitTaskSuccess = { type: typeof COMMIT_TASK_SUCCESS, taskId: number };
 export function commitTaskSuccess(taskId: string) {
+    analytics.track('Mapswipe Mobile - Completed Task', {
+      taskId,
+    });
     return { type: COMMIT_TASK_SUCCESS, taskId };
 }
 
 type CommitTaskFailed = { type: typeof COMMIT_TASK_FAILED, taskId: number };
 export function commitTaskFailed(taskId: string, error: {}) {
+    analytics.track('Mapswipe Mobile - Failed Task',{
+      taskId,
+      error,
+    });
     return { type: COMMIT_TASK_FAILED, taskId, error };
 }
 
 type SubmitChange = { type: typeof SUBMIT_CHANGE, resultObject: ResultType };
 export function submitChange(resultObject: ResultType): SubmitChange {
+    analytics.track('Mapswipe Mobile - Found Change', {
+      ...resultObject
+    });
     return { type: SUBMIT_CHANGE, resultObject };
 }
 
 type SubmitFootprint = { type: typeof SUBMIT_BUILDING_FOOTPRINT, resultObject: ResultType };
 export function submitFootprint(resultObject: ResultType): SubmitFootprint {
+    analytics.track('Mapswipe Mobile - Found Building', {
+      ...resultObject
+    });
     return { type: SUBMIT_BUILDING_FOOTPRINT, resultObject };
 }
 
